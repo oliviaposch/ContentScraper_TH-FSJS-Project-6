@@ -1,0 +1,20 @@
+{
+  "name": "csv",
+  "version": "0.0.1",
+  "description": "a content scraper",
+  "main": "scraper.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "csv": "^5.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "content",
+    "scraper"
+  ],
+  "author": "olivia",
+  "license": "MIT"
+}
