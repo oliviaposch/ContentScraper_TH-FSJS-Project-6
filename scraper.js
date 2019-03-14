@@ -9,24 +9,31 @@ const options = {
     host: 'shirts4mike.com',
     path: '/shirts.php',
 }
+let pageLinks = [];
 
 //connect with the website
 const request = https.request(options, function(response){
- // console.log(options);
-
+    
     response.on('data', function (chunk) {
-
         const $ = cheerio.load(chunk);
         /* siteProducts += chunk; console.log(siteProducts); */
-
+        
         $('.products li a').each( function(linkIndex) {
-            options.path =  $(this).attr('href');
-            //console.log(options);  //how to access to the pages data? 
-             //Lopp to get per page price, title, url from the produkt 
-        }); 
-        console.log(options);
-    });
+            pageLink =  $(this).attr('href');
+            pageLinks.push(pageLink);
+           
+        });  
+        for(var i = 0; i < pageLinks.length; i+= 1){
+            options.path = "/" + pageLinks[i];
+            const requestPages = https.request(options, function(response){
+                console.log('statusCode:', response.statusCode);
+                /* response.on('data', function (chunk) {
 
+                }); */
+            });
+        }
+    });
+    
     response.on('end', function (){
         console.log('no more data in response');
     });
