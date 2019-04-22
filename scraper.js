@@ -1,10 +1,10 @@
 const fs = require('fs');
 const https = require('https');
 const cheerio = require('cheerio');
-/* let siteProducts = ''; */
-let pathLink; 
-let pageLink;
+const createCsvWriter = require('csv-writer'); console.log(createCsvWriter);
 
+let pageLink;
+let siteProducts = "";
 const options = {
     host: 'shirts4mike.com',
     path: '/shirts.php',
@@ -13,25 +13,34 @@ let pageLinks = [];
 
 //connect with the website
 const request = https.request(options, function(response){
+    //console.log(options);
     
     response.on('data', function (chunk) {
         const $ = cheerio.load(chunk);
         /* siteProducts += chunk; console.log(siteProducts); */
         
         $('.products li a').each( function(linkIndex) {
-            pageLink =  $(this).attr('href');
-            pageLinks.push(pageLink);
-           
+            pageLink = $(this).attr('href');
+            pageLinks.push(pageLink); 
         });  
         for(var i = 0; i < pageLinks.length; i+= 1){
-            options.path = "/" + pageLinks[i];
-            const requestPages = https.request(options, function(response){
-                console.log('statusCode:', response.statusCode);
-                /* response.on('data', function (chunk) {
+            let pages =  pageLinks[i]; //product url
+            //console.log(pages);
+            const request2 = https.request(('https://' + options.host + '/' + pages), function(response){
+                response.on('data', function (chunk) {
+                    //siteProducts += chunk; console.log(siteProducts);
+                    const $ = cheerio.load(chunk);
+                    let productName = $('.shirt-details h1').text().split(' ').slice(1).join(' ');
+                    //console.log(getProductsName.join(' '));
+                    let productprice = $('span.price').text();
+                    let productImage = $('.shirt-picture img').attr('src'); //console.log(productImage);
 
-                }); */
-            });
+                });
+            }); 
+          request2.end();
         }
+        
+        console.log(pageLinks);
     });
     
     response.on('end', function (){
