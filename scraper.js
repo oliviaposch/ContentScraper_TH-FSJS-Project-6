@@ -1,15 +1,22 @@
 const fs = require('fs');
 const https = require('https');
 const cheerio = require('cheerio');
-const createCsvWriter = require('csv-writer'); console.log(createCsvWriter);
+const createCsvWriter = require('csv-writer').createArrayCsvWriter; //console.log(createCsvWriter);
+
 
 let pageLink;
-let siteProducts = "";
 const options = {
     host: 'shirts4mike.com',
     path: '/shirts.php',
 }
 let pageLinks = [];
+let pages;
+let currentDay = new Date();
+let month = currentDay.getUTCMonth() + 1; //months from 1-12
+let day = currentDay.getUTCDate();
+let year = currentDay.getUTCFullYear();
+let newdate = year + "-" + month + "-" + day; //console.log(newdate);
+const csvFile = fs.createReadStream('/data/' + newdate + '.csv');
 
 //connect with the website
 const request = https.request(options, function(response){
@@ -23,8 +30,8 @@ const request = https.request(options, function(response){
             pageLink = $(this).attr('href');
             pageLinks.push(pageLink); 
         });  
-        for(var i = 0; i < pageLinks.length; i+= 1){
-            let pages =  pageLinks[i]; //product url
+        for(let i = 0; i < pageLinks.length; i+= 1){
+            pages =  pageLinks[i]; //product url
             //console.log(pages);
             const request2 = https.request(('https://' + options.host + '/' + pages), function(response){
                 response.on('data', function (chunk) {
@@ -40,21 +47,48 @@ const request = https.request(options, function(response){
           request2.end();
         }
         
-        console.log(pageLinks);
+        //console.log(request2);
     });
     
     response.on('end', function (){
         console.log('no more data in response');
     });
 
-});
+}); //connect with the website
 
 request.on('error', function (e) {
  console.log(e.message);
 })
 request.end();
 
+//check iif data folder exist
+if ( !fs.existsSync('data') ) {
+
+    fs.mkdirSync('data');
+
+}
+
+/*save data in a csv file*/
+
+//header configuration : 
+const csvWriter = createCsvWriter({
+    header: ['NAME', 'LANGUAGE'],
+    path: csvFile // I have to create this file first!
+}); 
+
+//data structure for csv file:
+
+const data = [  
+    ['Bob',  'French, English'],
+    ['Mary', 'English']
+  ];
+  
+csvWriter.writeRecords(data)
+  .then(()=> console.log('The CSV file was written successfully'));
+ 
 //fs.mkdirSync('stuff');
+
+
 //create directories function
 const mkdirSync = function (dirPath) {
     try{
@@ -65,7 +99,11 @@ const mkdirSync = function (dirPath) {
         }
     }
 }
-//mkdirSync('stuff');
+
+
+/*save data in a csv file*/
+
+
 //remove Function 
 const rmdirSync = function (dirPath) {
     try{
@@ -79,4 +117,4 @@ const rmdirSync = function (dirPath) {
         
     }
 }
-//rmdirSync('stuff');
+
