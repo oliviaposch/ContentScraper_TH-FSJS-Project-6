@@ -1,14 +1,14 @@
 const fs = require('fs');
 const https = require('https');
 const cheerio = require('cheerio');
-const createCsvWriter = require('csv-writer').createArrayCsvWriter; //console.log(createCsvWriter);
-
+const csv = require('fast-csv'); //module
 
 let pageLink;
 const options = {
     host: 'shirts4mike.com',
     path: '/shirts.php',
 }
+
 let pageLinks = [];
 let pages;
 let currentDay = new Date();
@@ -16,7 +16,19 @@ let month = currentDay.getUTCMonth() + 1; //months from 1-12
 let day = currentDay.getUTCDate();
 let year = currentDay.getUTCFullYear();
 let newdate = year + "-" + month + "-" + day; //console.log(newdate);
-const csvFile = fs.createReadStream('/data/' + newdate + '.csv');
+
+
+const csvFile = fs.createWriteStream(`${__dirname}/data/` + newdate + '.csv');//create csv file in Data 
+console.log(csvFile);
+
+ //write csv
+ csv.write([
+    ['a1','b1'],
+    ['b2','c2'],
+    ['c2','d2']
+], {headers:true}).pipe(csvFile);
+
+
 
 //connect with the website
 const request = https.request(options, function(response){
@@ -30,6 +42,7 @@ const request = https.request(options, function(response){
             pageLink = $(this).attr('href');
             pageLinks.push(pageLink); 
         });  
+        //daten tracking
         for(let i = 0; i < pageLinks.length; i+= 1){
             pages =  pageLinks[i]; //product url
             //console.log(pages);
@@ -38,16 +51,17 @@ const request = https.request(options, function(response){
                     //siteProducts += chunk; console.log(siteProducts);
                     const $ = cheerio.load(chunk);
                     let productName = $('.shirt-details h1').text().split(' ').slice(1).join(' ');
-                    //console.log(getProductsName.join(' '));
+                    console.log(productName);
                     let productprice = $('span.price').text();
                     let productImage = $('.shirt-picture img').attr('src'); //console.log(productImage);
-
+                    console.log(productprice );
                 });
             }); 
+            //console.log(request2);
           request2.end();
         }
         
-        //console.log(request2);
+        
     });
     
     response.on('end', function (){
@@ -70,22 +84,7 @@ if ( !fs.existsSync('data') ) {
 
 /*save data in a csv file*/
 
-//header configuration : 
-const csvWriter = createCsvWriter({
-    header: ['NAME', 'LANGUAGE'],
-    path: csvFile // I have to create this file first!
-}); 
 
-//data structure for csv file:
-
-const data = [  
-    ['Bob',  'French, English'],
-    ['Mary', 'English']
-  ];
-  
-csvWriter.writeRecords(data)
-  .then(()=> console.log('The CSV file was written successfully'));
- 
 //fs.mkdirSync('stuff');
 
 
