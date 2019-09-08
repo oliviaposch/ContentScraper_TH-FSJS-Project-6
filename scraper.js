@@ -19,15 +19,14 @@ let newdate = year + "-" + month + "-" + day; //console.log(newdate);
 
 
 const csvFile = fs.createWriteStream(`${__dirname}/data/` + newdate + '.csv');//create csv file in Data 
-console.log(csvFile);
+/* console.log(csvFile); */
 
- //write csv
+/*  //write csv
  csv.write([
     ['a1','b1'],
     ['b2','c2'],
     ['c2','d2']
-], {headers:true}).pipe(csvFile);
-
+], {headers:true}).pipe(csvFile); */
 
 
 //connect with the website
@@ -35,37 +34,53 @@ const request = https.request(options, function(response){
     //console.log(options);
     
     response.on('data', function (chunk) {
+
         const $ = cheerio.load(chunk);
-        /* siteProducts += chunk; console.log(siteProducts); */
-        
+
         $('.products li a').each( function(linkIndex) {
             pageLink = $(this).attr('href');
             pageLinks.push(pageLink); 
         });  
+        //console.log(pageLinks);
+       
         //daten tracking
-        for(let i = 0; i < pageLinks.length; i+= 1){
+        let productName = [];
+        let productprice = []; 
+        let productImage = [];
+        /* let productName ;
+        let productprice ; 
+        let productImage ; */
+      
+        for(let i = 0; i < pageLinks.length; i++){
             pages =  pageLinks[i]; //product url
             //console.log(pages);
             const request2 = https.request(('https://' + options.host + '/' + pages), function(response){
                 response.on('data', function (chunk) {
-                    //siteProducts += chunk; console.log(siteProducts);
                     const $ = cheerio.load(chunk);
-                    let productName = $('.shirt-details h1').text().split(' ').slice(1).join(' ');
-                    console.log(productName);
-                    let productprice = $('span.price').text();
-                    let productImage = $('.shirt-picture img').attr('src'); //console.log(productImage);
-                    console.log(productprice );
-                });
+                    productName.push( $('.shirt-details h1').text().split(' ').slice(1).join(' ') );
+                   // console.log(productName);
+                    productprice.push( $('span.price').text() );
+                    productImage.push( $('.shirt-picture img').attr('src') ); //console.log(productImage);
+                    
+                    //console.log(productName);
+                }); 
+                csv.write([
+                    productName
+                   /*  productprice,
+                    productImage */
+                ], {headers:true}).pipe(csvFile); 
             }); 
-            //console.log(request2);
-          request2.end();
+          
+          request2.end(); 
+           
         }
-        
-        
+       
     });
     
     response.on('end', function (){
+     
         console.log('no more data in response');
+        
     });
 
 }); //connect with the website
@@ -85,19 +100,19 @@ if ( !fs.existsSync('data') ) {
 /*save data in a csv file*/
 
 
-//fs.mkdirSync('stuff');
+    //fs.mkdirSync('stuff');
 
 
-//create directories function
-const mkdirSync = function (dirPath) {
-    try{
-        fs.mkdirSync(dirPath);
-    }catch (err){
-        if (err.code !== 'EExist'){
-            throw err;
+    //create directories function
+    const mkdirSync = function (dirPath) {
+        try{
+            fs.mkdirSync(dirPath);
+        }catch (err){
+            if (err.code !== 'EExist'){
+                throw err;
+            }
         }
     }
-}
 
 
 /*save data in a csv file*/
